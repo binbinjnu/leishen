@@ -1,6 +1,6 @@
 syntax = "proto3";
 package test;
-// base 100
+// base 10
 
 // 测试协议
 // 10001

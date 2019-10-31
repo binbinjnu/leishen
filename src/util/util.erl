@@ -13,6 +13,7 @@
 -export([
     rand/2,
     term_to_string/1,
+    term_to_bitstring/1,
     get_call_from/0
 ]).
 
@@ -63,5 +64,10 @@ stack_format({M, F, _A, Info}) ->
             {M, F}
     end.
 
+
 term_to_string(Term) ->
     lists:flatten(io_lib:format("~9999999p", [Term])).
+
+
+term_to_bitstring(Term) ->
+    erlang:list_to_bitstring(io_lib:format("~999999p", [Term])).

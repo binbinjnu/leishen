@@ -2,7 +2,7 @@
 %%% @author Administrator
 %%% @copyright (C) 2019, <COMPANY>
 %%% @doc
-%%%
+%%%     协议encode decode
 %%% @end
 %%% Created : 30. 10月 2019 10:51
 %%%-------------------------------------------------------------------
@@ -40,9 +40,9 @@ do_pack({}) ->
 do_pack(Msg) when is_tuple(Msg)->
     MsgName = erlang:element(1, Msg),
     case data_proto:get(MsgName) of
-        {MsgID, MsgMod} ->
+        {MsgID, MsgPb} ->
             try
-                Content = MsgMod:encode(Msg),
+                Content = MsgPb:encode(Msg),
                 Len = erlang:iolist_size(Content) + 2,
                 [<<Len:16, MsgID:16>>, Content]
             catch _:_ ->
@@ -94,8 +94,8 @@ unpacks(_E, Acc) ->
 
 decode(MsgID, Bin) -> % 新协议
     case data_proto:get_c2s(MsgID) of
-        {MsgName, MsgMod} ->
-            MsgMod:decode(MsgName, Bin);
+        {MsgName, MsgPb} ->
+            MsgPb:decode(MsgName, Bin);
         _ ->
             error
     end.

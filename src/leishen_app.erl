@@ -14,7 +14,20 @@
 
 start(_StartType, _StartArgs) ->
     ok = pre_start(),
-    leishen_sup:start_link().
+    config:start(),
+
+    {ok, Sup} = leishen_sup:start_link(),
+
+    start_net(),
+
+    {ok, Sup}.
+
+start_net() ->
+    Ref = config:get_app(),
+    Port = config:get(prot),
+    Opts = #{handler => net_handler, socket_type => tcp},
+    {ok, _} = net_api:start_listener(Ref, Port, Opts),% 开放网络
+    ok.
 
 stop(_State) ->
     ok.

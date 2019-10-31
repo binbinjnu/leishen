@@ -6,7 +6,10 @@
   {applications,
    [kernel,
     stdlib,
-    lager
+    lager,
+    ranch,
+    mysql_poolboy
+%%    lz4
    ]},
   {env,[]},
   {modules, []},

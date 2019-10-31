@@ -7,9 +7,17 @@
 
 -define(test_pb_gpb_version, "4.10.5").
 
--ifndef('C2S_TEST_PB_H').
--define('C2S_TEST_PB_H', true).
--record(c2s_test,
+-ifndef('C2S_TEST1_PB_H').
+-define('C2S_TEST1_PB_H', true).
+-record(c2s_test1,
+        {int_v = 0              :: integer() | undefined, % = 1, 32 bits
+         string_v = <<>>        :: iodata() | undefined % = 2
+        }).
+-endif.
+
+-ifndef('C2S_TEST2_PB_H').
+-define('C2S_TEST2_PB_H', true).
+-record(c2s_test2,
         {int_v = 0              :: integer() | undefined, % = 1, 32 bits
          string_v = <<>>        :: iodata() | undefined % = 2
         }).
@@ -22,9 +30,17 @@
         }).
 -endif.
 
--ifndef('S2C_TEST_PB_H').
--define('S2C_TEST_PB_H', true).
--record(s2c_test,
+-ifndef('S2C_TEST1_PB_H').
+-define('S2C_TEST1_PB_H', true).
+-record(s2c_test1,
+        {int_v = 0              :: integer() | undefined, % = 1, 32 bits
+         string_v = <<>>        :: iodata() | undefined % = 2
+        }).
+-endif.
+
+-ifndef('S2C_TEST2_PB_H').
+-define('S2C_TEST2_PB_H', true).
+-record(s2c_test2,
         {int_v = 0              :: integer() | undefined, % = 1, 32 bits
          string_v = <<>>        :: iodata() | undefined % = 2
         }).

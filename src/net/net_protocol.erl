@@ -40,6 +40,7 @@
 
 -record(net_state, {
     socket :: port(),
+    socket_type :: atom(),
     transport :: atom(),
     handler :: atom(),
     recv_res = <<>> :: binary(),
@@ -48,7 +49,7 @@
     % timeref :: reference() | undefined,
     water_lv = 0 :: integer(),
     stat = #stat{},
-    udata = []
+    handler_state
 }).
 
 %%%===================================================================
@@ -83,7 +84,9 @@ start_link(Ref, Socket, Transport, Opts) ->
 init([]) ->
     {ok, undefined}.
 
-init(Ref, Socket, Transport, [Handler]) ->
+init(Ref, Socket, Transport, Opts) ->
+    Handler = maps:get(handler, Opts, net_handler),
+    SocketType = maps:get(socket_type, Opts, tcp),
     ok = proc_lib:init_ack({ok, self()}),
     ok = ranch:accept_ack(Ref),
     ok = Transport:setopts(Socket, [{active, true} | ?TCP_OPTIONS]),
@@ -93,14 +96,15 @@ init(Ref, Socket, Transport, [Handler]) ->
     State =
         #net_state{
             socket = Socket,
+            socket_type = SocketType,
             transport = Transport,
             handler = Handler,  % 目前为lib_net
             recv_res = <<>>,
             stat = Stat,
             sends = [],
-            udata = []
+            handler_state = []
         },
-    State1 = handle_up(State),
+    State1 = handler_up(State),
 %%    ?fg_folsom(tcp_connect()),
 %%    fg_net_checker:reg(),
     gen_server:enter_loop(?MODULE, [], State1).
@@ -146,7 +150,25 @@ handle_cast(_Request, State) ->
 %% @end
 %%--------------------------------------------------------------------
 
-handle_info({tcp, Socket, Data}, #net_state{socket = Socket} = State) ->
+%% 处理websocket消息
+handle_info({tcp, Socket, Data}, #net_state{socket = Socket, socket_type = websocket} = State) ->
+    ?NOTICE("Data:~p", [Data]),
+    DataList = string:tokens(binary_to_list(Data), "\r\n"),
+    MatchLine = hd(lists:filter(fun(S) -> lists:prefix("Sec-WebSocket-Key:", S) end, DataList)),
+    List = string:tokens(MatchLine, ": "),
+    ClientRandomString = lists:last(List),
+    Key = list_to_binary(ClientRandomString),
+    Challenge = base64:encode(crypto:hash(sha, <<Key/binary, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11">>)),
+    Handshake =
+        ["HTTP/1.1 101 Switching Protocols\r\n",
+         "connection: Upgrade\r\n",
+         "upgrade: websocket\r\n",
+         "sec-websocket-accept: ", Challenge, "\r\n",
+         "\r\n",<<>>],
+    erlang:port_command(Socket, Handshake),
+    {noreply, State#net_state{socket_type = tcp}};
+
+handle_info({tcp, Socket, Data}, #net_state{socket = Socket, socket_type = tcp} = State) ->
     ?NOTICE("Data:~w", [Data]),
     State1 = water_down(State),
     case net_data(Data, State1) of
@@ -183,9 +205,9 @@ handle_info({send_flush, Data}, State) ->
     State2 = flush_send(State1),
     {noreply, State2};
 
-handle_info({event, Event}, #net_state{handler = Mod, udata = UData} = State) ->
-    UData1 = Mod:handle_evt(Event, UData),
-    {noreply, State#net_state{udata = UData1}};
+handle_info({event, Event}, #net_state{handler = Mod, handler_state = HState} = State) ->
+    HState1 = Mod:handle_evt(Event, HState),
+    {noreply, State#net_state{handler_state = HState1}};
 
 handle_info({inet_reply, _, ok}, State) ->
     {noreply, State};
@@ -195,6 +217,7 @@ handle_info({inet_reply, Socket, _Err}, #net_state{socket = Socket} = State) ->
     {stop, normal, State};
 
 handle_info(_Info, State) ->
+    ?WARNING("not match info: ~p", [_Info]),
     {noreply, State}.
 
 %%--------------------------------------------------------------------
@@ -208,8 +231,8 @@ handle_info(_Info, State) ->
 %% @spec terminate(Reason, State) -> void()
 %% @end
 %%--------------------------------------------------------------------
-terminate(Reason, #net_state{handler = Mod, udata = Data}) ->
-    Mod:terminate(Reason, Data),
+terminate(Reason, #net_state{handler = Mod, handler_state = HState}) ->
+    Mod:terminate(Reason, HState),
 %%    ?fg_folsom(tcp_close()),
     ok.
 
@@ -228,14 +251,14 @@ code_change(_OldVsn, State, _Extra) ->
 %%% Internal functions
 %%%===================================================================
 %%% init handle
-handle_up(#net_state{socket = Socket, handler = Mod} = NetState) ->
-    Udata = Mod:init(Socket),
-    NetState#net_state{udata = Udata}.
+handler_up(#net_state{socket = Socket, handler = Mod} = NetState) ->
+    HState = Mod:init(Socket),
+    NetState#net_state{handler_state = HState}.
 
 %%% do handle
-handle(Message, #net_state{handler = Mod, udata = Udata} = NetState) ->
-    Udata1 = Mod:handle(Message, Udata),
-    NetState#net_state{udata = Udata1}.
+handle(Message, #net_state{handler = Mod, handler_state = HState} = NetState) ->
+    HState1 = Mod:handle(Message, HState),
+    NetState#net_state{handler_state = HState1}.
 
 
 %% 网络包水位
@@ -358,11 +381,11 @@ flush_send(#net_state{socket = Socket, sends = Sends} = State) ->
     State2#net_state{sends = []}.
 
 
-prepare_sends(Data, #net_state{handler = Handler, udata = Udata} = NetState) ->
+prepare_sends(Data, #net_state{handler = Handler, handler_state = HState} = NetState) ->
     case erlang:function_exported(Handler, prepare_sends, 2) of
         ?true ->
-            {Data1, Udata1} = Handler:prepare_sends(Data, Udata),
-            {Data1, NetState#net_state{udata = Udata1}};
+            {Data1, HState1} = Handler:prepare_sends(Data, HState),
+            {Data1, NetState#net_state{handler_state = HState1}};
         _ ->
             {Data, NetState}
     end.

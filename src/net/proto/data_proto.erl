@@ -11,8 +11,8 @@
 
 
 %% hello.proto get
-get(c2s_hello) -> {10101, hello_pb};
-get(s2c_hello) -> {10101, hello_pb};
+get(c2s_hello) -> {11001, hello_pb};
+get(s2c_hello) -> {11001, hello_pb};
 
 %% test.proto get
 get(c2s_test1) -> {10001, test_pb};
@@ -26,7 +26,7 @@ get(_ID) ->
 
 
 %% hello.proto get_c2s
-get_c2s(10101) -> {c2s_hello, hello_pb};
+get_c2s(11001) -> {c2s_hello, hello_pb};
 
 %% test.proto get_c2s
 get_c2s(10001) -> {c2s_test1, test_pb};
@@ -38,7 +38,7 @@ get_c2s(_ID) ->
 
 
 %% hello.proto get_s2c
-get_s2c(10101) -> {s2c_hello, hello_pb};
+get_s2c(11001) -> {s2c_hello, hello_pb};
 
 %% test.proto get_s2c
 get_s2c(10001) -> {s2c_test1, test_pb};

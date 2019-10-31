@@ -8,7 +8,8 @@
 %%%-------------------------------------------------------------------
 -author("Administrator").
 
--define(PACKAGE_HEAD_LEN, 16).
+-define(NUM_ACCEPTORS, 10).     %% acceptor 池大小
+-define(PACKAGE_HEAD_LEN, 16).  %% 包头长度
 -define(TCP_OPTIONS, [
     {nodelay, true},
     {delay_send, false},
@@ -24,11 +25,13 @@
 -define(NET_MAX_WATER_LV, 300).     %% 水位警戒等级
 -define(NET_HEART_TIMEOUT, 120).    %% 心跳超时 seconds
 
-%% net_handle 的state record
--record(nstate, {
+%% net_handler 的state record
+-record(handler_state, {
     state     = undefined   :: term(),
     pid       = undefined   :: pid() | undefined,
+    socket    = undefined   :: port() | undefined,
+    peername  = undefined,
     acc       = undefined,
-    debug_pid = 0,
-    server_id = 0    %% 入口ID, entrance_id
+    init_time = 0,
+    debug_pid = 0
 }).

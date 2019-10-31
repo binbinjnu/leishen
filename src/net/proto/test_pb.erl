@@ -52,26 +52,30 @@
 -export_type([]).
 
 %% message types
--type c2s_test() :: #c2s_test{}.
+-type c2s_test1() :: #c2s_test1{}.
+
+-type c2s_test2() :: #c2s_test2{}.
 
 -type value() :: #value{}.
 
--type s2c_test() :: #s2c_test{}.
+-type s2c_test1() :: #s2c_test1{}.
 
--export_type(['c2s_test'/0, 'value'/0, 's2c_test'/0]).
+-type s2c_test2() :: #s2c_test2{}.
 
--spec encode_msg(#c2s_test{} | #value{} | #s2c_test{}) -> binary().
+-export_type(['c2s_test1'/0, 'c2s_test2'/0, 'value'/0, 's2c_test1'/0, 's2c_test2'/0]).
+
+-spec encode_msg(#c2s_test1{} | #c2s_test2{} | #value{} | #s2c_test1{} | #s2c_test2{}) -> binary().
 encode_msg(Msg) when tuple_size(Msg) >= 1 ->
     encode_msg(Msg, element(1, Msg), []).
 
--spec encode_msg(#c2s_test{} | #value{} | #s2c_test{}, atom() | list()) -> binary().
+-spec encode_msg(#c2s_test1{} | #c2s_test2{} | #value{} | #s2c_test1{} | #s2c_test2{}, atom() | list()) -> binary().
 encode_msg(Msg, MsgName) when is_atom(MsgName) ->
     encode_msg(Msg, MsgName, []);
 encode_msg(Msg, Opts)
     when tuple_size(Msg) >= 1, is_list(Opts) ->
     encode_msg(Msg, element(1, Msg), Opts).
 
--spec encode_msg(#c2s_test{} | #value{} | #s2c_test{}, atom(), list()) -> binary().
+-spec encode_msg(#c2s_test1{} | #c2s_test2{} | #value{} | #s2c_test1{} | #s2c_test2{}, atom(), list()) -> binary().
 encode_msg(Msg, MsgName, Opts) ->
     case proplists:get_bool(verify, Opts) of
       true -> verify_msg(Msg, MsgName, Opts);
@@ -79,22 +83,55 @@ encode_msg(Msg, MsgName, Opts) ->
     end,
     TrUserData = proplists:get_value(user_data, Opts),
     case MsgName of
-      c2s_test ->
-	  encode_msg_c2s_test(id(Msg, TrUserData), TrUserData);
+      c2s_test1 ->
+	  encode_msg_c2s_test1(id(Msg, TrUserData), TrUserData);
+      c2s_test2 ->
+	  encode_msg_c2s_test2(id(Msg, TrUserData), TrUserData);
       value ->
 	  encode_msg_value(id(Msg, TrUserData), TrUserData);
-      s2c_test ->
-	  encode_msg_s2c_test(id(Msg, TrUserData), TrUserData)
+      s2c_test1 ->
+	  encode_msg_s2c_test1(id(Msg, TrUserData), TrUserData);
+      s2c_test2 ->
+	  encode_msg_s2c_test2(id(Msg, TrUserData), TrUserData)
     end.
 
 
-encode_msg_c2s_test(Msg, TrUserData) ->
-    encode_msg_c2s_test(Msg, <<>>, TrUserData).
+encode_msg_c2s_test1(Msg, TrUserData) ->
+    encode_msg_c2s_test1(Msg, <<>>, TrUserData).
 
 
-encode_msg_c2s_test(#c2s_test{int_v = F1,
-			      string_v = F2},
-		    Bin, TrUserData) ->
+encode_msg_c2s_test1(#c2s_test1{int_v = F1,
+				string_v = F2},
+		     Bin, TrUserData) ->
+    B1 = if F1 == undefined -> Bin;
+	    true ->
+		begin
+		  TrF1 = id(F1, TrUserData),
+		  if TrF1 =:= 0 -> Bin;
+		     true ->
+			 e_type_int32(TrF1, <<Bin/binary, 8>>, TrUserData)
+		  end
+		end
+	 end,
+    if F2 == undefined -> B1;
+       true ->
+	   begin
+	     TrF2 = id(F2, TrUserData),
+	     case is_empty_string(TrF2) of
+	       true -> B1;
+	       false ->
+		   e_type_string(TrF2, <<B1/binary, 18>>, TrUserData)
+	     end
+	   end
+    end.
+
+encode_msg_c2s_test2(Msg, TrUserData) ->
+    encode_msg_c2s_test2(Msg, <<>>, TrUserData).
+
+
+encode_msg_c2s_test2(#c2s_test2{int_v = F1,
+				string_v = F2},
+		     Bin, TrUserData) ->
     B1 = if F1 == undefined -> Bin;
 	    true ->
 		begin
@@ -133,13 +170,42 @@ encode_msg_value(#value{int_v = F1}, Bin, TrUserData) ->
 	   end
     end.
 
-encode_msg_s2c_test(Msg, TrUserData) ->
-    encode_msg_s2c_test(Msg, <<>>, TrUserData).
+encode_msg_s2c_test1(Msg, TrUserData) ->
+    encode_msg_s2c_test1(Msg, <<>>, TrUserData).
 
 
-encode_msg_s2c_test(#s2c_test{int_v = F1,
-			      string_v = F2},
-		    Bin, TrUserData) ->
+encode_msg_s2c_test1(#s2c_test1{int_v = F1,
+				string_v = F2},
+		     Bin, TrUserData) ->
+    B1 = if F1 == undefined -> Bin;
+	    true ->
+		begin
+		  TrF1 = id(F1, TrUserData),
+		  if TrF1 =:= 0 -> Bin;
+		     true ->
+			 e_type_int32(TrF1, <<Bin/binary, 8>>, TrUserData)
+		  end
+		end
+	 end,
+    if F2 == undefined -> B1;
+       true ->
+	   begin
+	     TrF2 = id(F2, TrUserData),
+	     case is_empty_string(TrF2) of
+	       true -> B1;
+	       false ->
+		   e_type_string(TrF2, <<B1/binary, 18>>, TrUserData)
+	     end
+	   end
+    end.
+
+encode_msg_s2c_test2(Msg, TrUserData) ->
+    encode_msg_s2c_test2(Msg, <<>>, TrUserData).
+
+
+encode_msg_s2c_test2(#s2c_test2{int_v = F1,
+				string_v = F2},
+		     Bin, TrUserData) ->
     B1 = if F1 == undefined -> Bin;
 	    true ->
 		begin
@@ -295,140 +361,272 @@ decode_msg_1_catch(Bin, MsgName, TrUserData) ->
     end.
 -endif.
 
-decode_msg_2_doit(c2s_test, Bin, TrUserData) ->
-    id(decode_msg_c2s_test(Bin, TrUserData), TrUserData);
+decode_msg_2_doit(c2s_test1, Bin, TrUserData) ->
+    id(decode_msg_c2s_test1(Bin, TrUserData), TrUserData);
+decode_msg_2_doit(c2s_test2, Bin, TrUserData) ->
+    id(decode_msg_c2s_test2(Bin, TrUserData), TrUserData);
 decode_msg_2_doit(value, Bin, TrUserData) ->
     id(decode_msg_value(Bin, TrUserData), TrUserData);
-decode_msg_2_doit(s2c_test, Bin, TrUserData) ->
-    id(decode_msg_s2c_test(Bin, TrUserData), TrUserData).
+decode_msg_2_doit(s2c_test1, Bin, TrUserData) ->
+    id(decode_msg_s2c_test1(Bin, TrUserData), TrUserData);
+decode_msg_2_doit(s2c_test2, Bin, TrUserData) ->
+    id(decode_msg_s2c_test2(Bin, TrUserData), TrUserData).
 
 
 
-decode_msg_c2s_test(Bin, TrUserData) ->
-    dfp_read_field_def_c2s_test(Bin, 0, 0,
-				id(0, TrUserData), id(<<>>, TrUserData),
+decode_msg_c2s_test1(Bin, TrUserData) ->
+    dfp_read_field_def_c2s_test1(Bin, 0, 0,
+				 id(0, TrUserData), id(<<>>, TrUserData),
+				 TrUserData).
+
+dfp_read_field_def_c2s_test1(<<8, Rest/binary>>, Z1, Z2,
+			     F@_1, F@_2, TrUserData) ->
+    d_field_c2s_test1_int_v(Rest, Z1, Z2, F@_1, F@_2,
+			    TrUserData);
+dfp_read_field_def_c2s_test1(<<18, Rest/binary>>, Z1,
+			     Z2, F@_1, F@_2, TrUserData) ->
+    d_field_c2s_test1_string_v(Rest, Z1, Z2, F@_1, F@_2,
+			       TrUserData);
+dfp_read_field_def_c2s_test1(<<>>, 0, 0, F@_1, F@_2,
+			     _) ->
+    #c2s_test1{int_v = F@_1, string_v = F@_2};
+dfp_read_field_def_c2s_test1(Other, Z1, Z2, F@_1, F@_2,
+			     TrUserData) ->
+    dg_read_field_def_c2s_test1(Other, Z1, Z2, F@_1, F@_2,
 				TrUserData).
 
-dfp_read_field_def_c2s_test(<<8, Rest/binary>>, Z1, Z2,
-			    F@_1, F@_2, TrUserData) ->
-    d_field_c2s_test_int_v(Rest, Z1, Z2, F@_1, F@_2,
-			   TrUserData);
-dfp_read_field_def_c2s_test(<<18, Rest/binary>>, Z1, Z2,
-			    F@_1, F@_2, TrUserData) ->
-    d_field_c2s_test_string_v(Rest, Z1, Z2, F@_1, F@_2,
-			      TrUserData);
-dfp_read_field_def_c2s_test(<<>>, 0, 0, F@_1, F@_2,
-			    _) ->
-    #c2s_test{int_v = F@_1, string_v = F@_2};
-dfp_read_field_def_c2s_test(Other, Z1, Z2, F@_1, F@_2,
-			    TrUserData) ->
-    dg_read_field_def_c2s_test(Other, Z1, Z2, F@_1, F@_2,
-			       TrUserData).
-
-dg_read_field_def_c2s_test(<<1:1, X:7, Rest/binary>>, N,
-			   Acc, F@_1, F@_2, TrUserData)
+dg_read_field_def_c2s_test1(<<1:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData)
     when N < 32 - 7 ->
-    dg_read_field_def_c2s_test(Rest, N + 7, X bsl N + Acc,
-			       F@_1, F@_2, TrUserData);
-dg_read_field_def_c2s_test(<<0:1, X:7, Rest/binary>>, N,
-			   Acc, F@_1, F@_2, TrUserData) ->
+    dg_read_field_def_c2s_test1(Rest, N + 7, X bsl N + Acc,
+				F@_1, F@_2, TrUserData);
+dg_read_field_def_c2s_test1(<<0:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData) ->
     Key = X bsl N + Acc,
     case Key of
       8 ->
-	  d_field_c2s_test_int_v(Rest, 0, 0, F@_1, F@_2,
-				 TrUserData);
+	  d_field_c2s_test1_int_v(Rest, 0, 0, F@_1, F@_2,
+				  TrUserData);
       18 ->
-	  d_field_c2s_test_string_v(Rest, 0, 0, F@_1, F@_2,
-				    TrUserData);
+	  d_field_c2s_test1_string_v(Rest, 0, 0, F@_1, F@_2,
+				     TrUserData);
       _ ->
 	  case Key band 7 of
 	    0 ->
-		skip_varint_c2s_test(Rest, 0, 0, F@_1, F@_2,
-				     TrUserData);
+		skip_varint_c2s_test1(Rest, 0, 0, F@_1, F@_2,
+				      TrUserData);
 	    1 ->
-		skip_64_c2s_test(Rest, 0, 0, F@_1, F@_2, TrUserData);
+		skip_64_c2s_test1(Rest, 0, 0, F@_1, F@_2, TrUserData);
 	    2 ->
-		skip_length_delimited_c2s_test(Rest, 0, 0, F@_1, F@_2,
-					       TrUserData);
+		skip_length_delimited_c2s_test1(Rest, 0, 0, F@_1, F@_2,
+						TrUserData);
 	    3 ->
-		skip_group_c2s_test(Rest, Key bsr 3, 0, F@_1, F@_2,
-				    TrUserData);
+		skip_group_c2s_test1(Rest, Key bsr 3, 0, F@_1, F@_2,
+				     TrUserData);
 	    5 ->
-		skip_32_c2s_test(Rest, 0, 0, F@_1, F@_2, TrUserData)
+		skip_32_c2s_test1(Rest, 0, 0, F@_1, F@_2, TrUserData)
 	  end
     end;
-dg_read_field_def_c2s_test(<<>>, 0, 0, F@_1, F@_2, _) ->
-    #c2s_test{int_v = F@_1, string_v = F@_2}.
+dg_read_field_def_c2s_test1(<<>>, 0, 0, F@_1, F@_2,
+			    _) ->
+    #c2s_test1{int_v = F@_1, string_v = F@_2}.
 
-d_field_c2s_test_int_v(<<1:1, X:7, Rest/binary>>, N,
-		       Acc, F@_1, F@_2, TrUserData)
+d_field_c2s_test1_int_v(<<1:1, X:7, Rest/binary>>, N,
+			Acc, F@_1, F@_2, TrUserData)
     when N < 57 ->
-    d_field_c2s_test_int_v(Rest, N + 7, X bsl N + Acc, F@_1,
-			   F@_2, TrUserData);
-d_field_c2s_test_int_v(<<0:1, X:7, Rest/binary>>, N,
-		       Acc, _, F@_2, TrUserData) ->
+    d_field_c2s_test1_int_v(Rest, N + 7, X bsl N + Acc,
+			    F@_1, F@_2, TrUserData);
+d_field_c2s_test1_int_v(<<0:1, X:7, Rest/binary>>, N,
+			Acc, _, F@_2, TrUserData) ->
     {NewFValue, RestF} = {begin
 			    <<Res:32/signed-native>> = <<(X bsl N +
 							    Acc):32/unsigned-native>>,
 			    id(Res, TrUserData)
 			  end,
 			  Rest},
-    dfp_read_field_def_c2s_test(RestF, 0, 0, NewFValue,
-				F@_2, TrUserData).
+    dfp_read_field_def_c2s_test1(RestF, 0, 0, NewFValue,
+				 F@_2, TrUserData).
 
-d_field_c2s_test_string_v(<<1:1, X:7, Rest/binary>>, N,
-			  Acc, F@_1, F@_2, TrUserData)
+d_field_c2s_test1_string_v(<<1:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, F@_2, TrUserData)
     when N < 57 ->
-    d_field_c2s_test_string_v(Rest, N + 7, X bsl N + Acc,
-			      F@_1, F@_2, TrUserData);
-d_field_c2s_test_string_v(<<0:1, X:7, Rest/binary>>, N,
-			  Acc, F@_1, _, TrUserData) ->
+    d_field_c2s_test1_string_v(Rest, N + 7, X bsl N + Acc,
+			       F@_1, F@_2, TrUserData);
+d_field_c2s_test1_string_v(<<0:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, _, TrUserData) ->
     {NewFValue, RestF} = begin
 			   Len = X bsl N + Acc,
 			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
 			   {id(binary:copy(Bytes), TrUserData), Rest2}
 			 end,
-    dfp_read_field_def_c2s_test(RestF, 0, 0, F@_1,
-				NewFValue, TrUserData).
+    dfp_read_field_def_c2s_test1(RestF, 0, 0, F@_1,
+				 NewFValue, TrUserData).
 
-skip_varint_c2s_test(<<1:1, _:7, Rest/binary>>, Z1, Z2,
-		     F@_1, F@_2, TrUserData) ->
-    skip_varint_c2s_test(Rest, Z1, Z2, F@_1, F@_2,
-			 TrUserData);
-skip_varint_c2s_test(<<0:1, _:7, Rest/binary>>, Z1, Z2,
-		     F@_1, F@_2, TrUserData) ->
-    dfp_read_field_def_c2s_test(Rest, Z1, Z2, F@_1, F@_2,
-				TrUserData).
+skip_varint_c2s_test1(<<1:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, TrUserData) ->
+    skip_varint_c2s_test1(Rest, Z1, Z2, F@_1, F@_2,
+			  TrUserData);
+skip_varint_c2s_test1(<<0:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_test1(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
 
-skip_length_delimited_c2s_test(<<1:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, TrUserData)
+skip_length_delimited_c2s_test1(<<1:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, TrUserData)
     when N < 57 ->
-    skip_length_delimited_c2s_test(Rest, N + 7,
-				   X bsl N + Acc, F@_1, F@_2, TrUserData);
-skip_length_delimited_c2s_test(<<0:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, TrUserData) ->
+    skip_length_delimited_c2s_test1(Rest, N + 7,
+				    X bsl N + Acc, F@_1, F@_2, TrUserData);
+skip_length_delimited_c2s_test1(<<0:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, TrUserData) ->
     Length = X bsl N + Acc,
     <<_:Length/binary, Rest2/binary>> = Rest,
-    dfp_read_field_def_c2s_test(Rest2, 0, 0, F@_1, F@_2,
-				TrUserData).
+    dfp_read_field_def_c2s_test1(Rest2, 0, 0, F@_1, F@_2,
+				 TrUserData).
 
-skip_group_c2s_test(Bin, FNum, Z2, F@_1, F@_2,
-		    TrUserData) ->
+skip_group_c2s_test1(Bin, FNum, Z2, F@_1, F@_2,
+		     TrUserData) ->
     {_, Rest} = read_group(Bin, FNum),
-    dfp_read_field_def_c2s_test(Rest, 0, Z2, F@_1, F@_2,
+    dfp_read_field_def_c2s_test1(Rest, 0, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_32_c2s_test1(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_test1(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_64_c2s_test1(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_test1(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
+
+decode_msg_c2s_test2(Bin, TrUserData) ->
+    dfp_read_field_def_c2s_test2(Bin, 0, 0,
+				 id(0, TrUserData), id(<<>>, TrUserData),
+				 TrUserData).
+
+dfp_read_field_def_c2s_test2(<<8, Rest/binary>>, Z1, Z2,
+			     F@_1, F@_2, TrUserData) ->
+    d_field_c2s_test2_int_v(Rest, Z1, Z2, F@_1, F@_2,
+			    TrUserData);
+dfp_read_field_def_c2s_test2(<<18, Rest/binary>>, Z1,
+			     Z2, F@_1, F@_2, TrUserData) ->
+    d_field_c2s_test2_string_v(Rest, Z1, Z2, F@_1, F@_2,
+			       TrUserData);
+dfp_read_field_def_c2s_test2(<<>>, 0, 0, F@_1, F@_2,
+			     _) ->
+    #c2s_test2{int_v = F@_1, string_v = F@_2};
+dfp_read_field_def_c2s_test2(Other, Z1, Z2, F@_1, F@_2,
+			     TrUserData) ->
+    dg_read_field_def_c2s_test2(Other, Z1, Z2, F@_1, F@_2,
 				TrUserData).
 
-skip_32_c2s_test(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
-		 F@_2, TrUserData) ->
-    dfp_read_field_def_c2s_test(Rest, Z1, Z2, F@_1, F@_2,
-				TrUserData).
+dg_read_field_def_c2s_test2(<<1:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData)
+    when N < 32 - 7 ->
+    dg_read_field_def_c2s_test2(Rest, N + 7, X bsl N + Acc,
+				F@_1, F@_2, TrUserData);
+dg_read_field_def_c2s_test2(<<0:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData) ->
+    Key = X bsl N + Acc,
+    case Key of
+      8 ->
+	  d_field_c2s_test2_int_v(Rest, 0, 0, F@_1, F@_2,
+				  TrUserData);
+      18 ->
+	  d_field_c2s_test2_string_v(Rest, 0, 0, F@_1, F@_2,
+				     TrUserData);
+      _ ->
+	  case Key band 7 of
+	    0 ->
+		skip_varint_c2s_test2(Rest, 0, 0, F@_1, F@_2,
+				      TrUserData);
+	    1 ->
+		skip_64_c2s_test2(Rest, 0, 0, F@_1, F@_2, TrUserData);
+	    2 ->
+		skip_length_delimited_c2s_test2(Rest, 0, 0, F@_1, F@_2,
+						TrUserData);
+	    3 ->
+		skip_group_c2s_test2(Rest, Key bsr 3, 0, F@_1, F@_2,
+				     TrUserData);
+	    5 ->
+		skip_32_c2s_test2(Rest, 0, 0, F@_1, F@_2, TrUserData)
+	  end
+    end;
+dg_read_field_def_c2s_test2(<<>>, 0, 0, F@_1, F@_2,
+			    _) ->
+    #c2s_test2{int_v = F@_1, string_v = F@_2}.
 
-skip_64_c2s_test(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
-		 F@_2, TrUserData) ->
-    dfp_read_field_def_c2s_test(Rest, Z1, Z2, F@_1, F@_2,
-				TrUserData).
+d_field_c2s_test2_int_v(<<1:1, X:7, Rest/binary>>, N,
+			Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    d_field_c2s_test2_int_v(Rest, N + 7, X bsl N + Acc,
+			    F@_1, F@_2, TrUserData);
+d_field_c2s_test2_int_v(<<0:1, X:7, Rest/binary>>, N,
+			Acc, _, F@_2, TrUserData) ->
+    {NewFValue, RestF} = {begin
+			    <<Res:32/signed-native>> = <<(X bsl N +
+							    Acc):32/unsigned-native>>,
+			    id(Res, TrUserData)
+			  end,
+			  Rest},
+    dfp_read_field_def_c2s_test2(RestF, 0, 0, NewFValue,
+				 F@_2, TrUserData).
+
+d_field_c2s_test2_string_v(<<1:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    d_field_c2s_test2_string_v(Rest, N + 7, X bsl N + Acc,
+			       F@_1, F@_2, TrUserData);
+d_field_c2s_test2_string_v(<<0:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, _, TrUserData) ->
+    {NewFValue, RestF} = begin
+			   Len = X bsl N + Acc,
+			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
+			   {id(binary:copy(Bytes), TrUserData), Rest2}
+			 end,
+    dfp_read_field_def_c2s_test2(RestF, 0, 0, F@_1,
+				 NewFValue, TrUserData).
+
+skip_varint_c2s_test2(<<1:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, TrUserData) ->
+    skip_varint_c2s_test2(Rest, Z1, Z2, F@_1, F@_2,
+			  TrUserData);
+skip_varint_c2s_test2(<<0:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_test2(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_length_delimited_c2s_test2(<<1:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    skip_length_delimited_c2s_test2(Rest, N + 7,
+				    X bsl N + Acc, F@_1, F@_2, TrUserData);
+skip_length_delimited_c2s_test2(<<0:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, TrUserData) ->
+    Length = X bsl N + Acc,
+    <<_:Length/binary, Rest2/binary>> = Rest,
+    dfp_read_field_def_c2s_test2(Rest2, 0, 0, F@_1, F@_2,
+				 TrUserData).
+
+skip_group_c2s_test2(Bin, FNum, Z2, F@_1, F@_2,
+		     TrUserData) ->
+    {_, Rest} = read_group(Bin, FNum),
+    dfp_read_field_def_c2s_test2(Rest, 0, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_32_c2s_test2(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_test2(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_64_c2s_test2(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, TrUserData) ->
+    dfp_read_field_def_c2s_test2(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
 
 decode_msg_value(Bin, TrUserData) ->
     dfp_read_field_def_value(Bin, 0, 0, id(0, TrUserData),
@@ -518,131 +716,259 @@ skip_64_value(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
     dfp_read_field_def_value(Rest, Z1, Z2, F@_1,
 			     TrUserData).
 
-decode_msg_s2c_test(Bin, TrUserData) ->
-    dfp_read_field_def_s2c_test(Bin, 0, 0,
-				id(0, TrUserData), id(<<>>, TrUserData),
+decode_msg_s2c_test1(Bin, TrUserData) ->
+    dfp_read_field_def_s2c_test1(Bin, 0, 0,
+				 id(0, TrUserData), id(<<>>, TrUserData),
+				 TrUserData).
+
+dfp_read_field_def_s2c_test1(<<8, Rest/binary>>, Z1, Z2,
+			     F@_1, F@_2, TrUserData) ->
+    d_field_s2c_test1_int_v(Rest, Z1, Z2, F@_1, F@_2,
+			    TrUserData);
+dfp_read_field_def_s2c_test1(<<18, Rest/binary>>, Z1,
+			     Z2, F@_1, F@_2, TrUserData) ->
+    d_field_s2c_test1_string_v(Rest, Z1, Z2, F@_1, F@_2,
+			       TrUserData);
+dfp_read_field_def_s2c_test1(<<>>, 0, 0, F@_1, F@_2,
+			     _) ->
+    #s2c_test1{int_v = F@_1, string_v = F@_2};
+dfp_read_field_def_s2c_test1(Other, Z1, Z2, F@_1, F@_2,
+			     TrUserData) ->
+    dg_read_field_def_s2c_test1(Other, Z1, Z2, F@_1, F@_2,
 				TrUserData).
 
-dfp_read_field_def_s2c_test(<<8, Rest/binary>>, Z1, Z2,
-			    F@_1, F@_2, TrUserData) ->
-    d_field_s2c_test_int_v(Rest, Z1, Z2, F@_1, F@_2,
-			   TrUserData);
-dfp_read_field_def_s2c_test(<<18, Rest/binary>>, Z1, Z2,
-			    F@_1, F@_2, TrUserData) ->
-    d_field_s2c_test_string_v(Rest, Z1, Z2, F@_1, F@_2,
-			      TrUserData);
-dfp_read_field_def_s2c_test(<<>>, 0, 0, F@_1, F@_2,
-			    _) ->
-    #s2c_test{int_v = F@_1, string_v = F@_2};
-dfp_read_field_def_s2c_test(Other, Z1, Z2, F@_1, F@_2,
-			    TrUserData) ->
-    dg_read_field_def_s2c_test(Other, Z1, Z2, F@_1, F@_2,
-			       TrUserData).
-
-dg_read_field_def_s2c_test(<<1:1, X:7, Rest/binary>>, N,
-			   Acc, F@_1, F@_2, TrUserData)
+dg_read_field_def_s2c_test1(<<1:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData)
     when N < 32 - 7 ->
-    dg_read_field_def_s2c_test(Rest, N + 7, X bsl N + Acc,
-			       F@_1, F@_2, TrUserData);
-dg_read_field_def_s2c_test(<<0:1, X:7, Rest/binary>>, N,
-			   Acc, F@_1, F@_2, TrUserData) ->
+    dg_read_field_def_s2c_test1(Rest, N + 7, X bsl N + Acc,
+				F@_1, F@_2, TrUserData);
+dg_read_field_def_s2c_test1(<<0:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData) ->
     Key = X bsl N + Acc,
     case Key of
       8 ->
-	  d_field_s2c_test_int_v(Rest, 0, 0, F@_1, F@_2,
-				 TrUserData);
+	  d_field_s2c_test1_int_v(Rest, 0, 0, F@_1, F@_2,
+				  TrUserData);
       18 ->
-	  d_field_s2c_test_string_v(Rest, 0, 0, F@_1, F@_2,
-				    TrUserData);
+	  d_field_s2c_test1_string_v(Rest, 0, 0, F@_1, F@_2,
+				     TrUserData);
       _ ->
 	  case Key band 7 of
 	    0 ->
-		skip_varint_s2c_test(Rest, 0, 0, F@_1, F@_2,
-				     TrUserData);
+		skip_varint_s2c_test1(Rest, 0, 0, F@_1, F@_2,
+				      TrUserData);
 	    1 ->
-		skip_64_s2c_test(Rest, 0, 0, F@_1, F@_2, TrUserData);
+		skip_64_s2c_test1(Rest, 0, 0, F@_1, F@_2, TrUserData);
 	    2 ->
-		skip_length_delimited_s2c_test(Rest, 0, 0, F@_1, F@_2,
-					       TrUserData);
+		skip_length_delimited_s2c_test1(Rest, 0, 0, F@_1, F@_2,
+						TrUserData);
 	    3 ->
-		skip_group_s2c_test(Rest, Key bsr 3, 0, F@_1, F@_2,
-				    TrUserData);
+		skip_group_s2c_test1(Rest, Key bsr 3, 0, F@_1, F@_2,
+				     TrUserData);
 	    5 ->
-		skip_32_s2c_test(Rest, 0, 0, F@_1, F@_2, TrUserData)
+		skip_32_s2c_test1(Rest, 0, 0, F@_1, F@_2, TrUserData)
 	  end
     end;
-dg_read_field_def_s2c_test(<<>>, 0, 0, F@_1, F@_2, _) ->
-    #s2c_test{int_v = F@_1, string_v = F@_2}.
+dg_read_field_def_s2c_test1(<<>>, 0, 0, F@_1, F@_2,
+			    _) ->
+    #s2c_test1{int_v = F@_1, string_v = F@_2}.
 
-d_field_s2c_test_int_v(<<1:1, X:7, Rest/binary>>, N,
-		       Acc, F@_1, F@_2, TrUserData)
+d_field_s2c_test1_int_v(<<1:1, X:7, Rest/binary>>, N,
+			Acc, F@_1, F@_2, TrUserData)
     when N < 57 ->
-    d_field_s2c_test_int_v(Rest, N + 7, X bsl N + Acc, F@_1,
-			   F@_2, TrUserData);
-d_field_s2c_test_int_v(<<0:1, X:7, Rest/binary>>, N,
-		       Acc, _, F@_2, TrUserData) ->
+    d_field_s2c_test1_int_v(Rest, N + 7, X bsl N + Acc,
+			    F@_1, F@_2, TrUserData);
+d_field_s2c_test1_int_v(<<0:1, X:7, Rest/binary>>, N,
+			Acc, _, F@_2, TrUserData) ->
     {NewFValue, RestF} = {begin
 			    <<Res:32/signed-native>> = <<(X bsl N +
 							    Acc):32/unsigned-native>>,
 			    id(Res, TrUserData)
 			  end,
 			  Rest},
-    dfp_read_field_def_s2c_test(RestF, 0, 0, NewFValue,
-				F@_2, TrUserData).
+    dfp_read_field_def_s2c_test1(RestF, 0, 0, NewFValue,
+				 F@_2, TrUserData).
 
-d_field_s2c_test_string_v(<<1:1, X:7, Rest/binary>>, N,
-			  Acc, F@_1, F@_2, TrUserData)
+d_field_s2c_test1_string_v(<<1:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, F@_2, TrUserData)
     when N < 57 ->
-    d_field_s2c_test_string_v(Rest, N + 7, X bsl N + Acc,
-			      F@_1, F@_2, TrUserData);
-d_field_s2c_test_string_v(<<0:1, X:7, Rest/binary>>, N,
-			  Acc, F@_1, _, TrUserData) ->
+    d_field_s2c_test1_string_v(Rest, N + 7, X bsl N + Acc,
+			       F@_1, F@_2, TrUserData);
+d_field_s2c_test1_string_v(<<0:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, _, TrUserData) ->
     {NewFValue, RestF} = begin
 			   Len = X bsl N + Acc,
 			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
 			   {id(binary:copy(Bytes), TrUserData), Rest2}
 			 end,
-    dfp_read_field_def_s2c_test(RestF, 0, 0, F@_1,
-				NewFValue, TrUserData).
+    dfp_read_field_def_s2c_test1(RestF, 0, 0, F@_1,
+				 NewFValue, TrUserData).
 
-skip_varint_s2c_test(<<1:1, _:7, Rest/binary>>, Z1, Z2,
-		     F@_1, F@_2, TrUserData) ->
-    skip_varint_s2c_test(Rest, Z1, Z2, F@_1, F@_2,
-			 TrUserData);
-skip_varint_s2c_test(<<0:1, _:7, Rest/binary>>, Z1, Z2,
-		     F@_1, F@_2, TrUserData) ->
-    dfp_read_field_def_s2c_test(Rest, Z1, Z2, F@_1, F@_2,
-				TrUserData).
+skip_varint_s2c_test1(<<1:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, TrUserData) ->
+    skip_varint_s2c_test1(Rest, Z1, Z2, F@_1, F@_2,
+			  TrUserData);
+skip_varint_s2c_test1(<<0:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, TrUserData) ->
+    dfp_read_field_def_s2c_test1(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
 
-skip_length_delimited_s2c_test(<<1:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, TrUserData)
+skip_length_delimited_s2c_test1(<<1:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, TrUserData)
     when N < 57 ->
-    skip_length_delimited_s2c_test(Rest, N + 7,
-				   X bsl N + Acc, F@_1, F@_2, TrUserData);
-skip_length_delimited_s2c_test(<<0:1, X:7,
-				 Rest/binary>>,
-			       N, Acc, F@_1, F@_2, TrUserData) ->
+    skip_length_delimited_s2c_test1(Rest, N + 7,
+				    X bsl N + Acc, F@_1, F@_2, TrUserData);
+skip_length_delimited_s2c_test1(<<0:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, TrUserData) ->
     Length = X bsl N + Acc,
     <<_:Length/binary, Rest2/binary>> = Rest,
-    dfp_read_field_def_s2c_test(Rest2, 0, 0, F@_1, F@_2,
-				TrUserData).
+    dfp_read_field_def_s2c_test1(Rest2, 0, 0, F@_1, F@_2,
+				 TrUserData).
 
-skip_group_s2c_test(Bin, FNum, Z2, F@_1, F@_2,
-		    TrUserData) ->
+skip_group_s2c_test1(Bin, FNum, Z2, F@_1, F@_2,
+		     TrUserData) ->
     {_, Rest} = read_group(Bin, FNum),
-    dfp_read_field_def_s2c_test(Rest, 0, Z2, F@_1, F@_2,
+    dfp_read_field_def_s2c_test1(Rest, 0, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_32_s2c_test1(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, TrUserData) ->
+    dfp_read_field_def_s2c_test1(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_64_s2c_test1(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, TrUserData) ->
+    dfp_read_field_def_s2c_test1(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
+
+decode_msg_s2c_test2(Bin, TrUserData) ->
+    dfp_read_field_def_s2c_test2(Bin, 0, 0,
+				 id(0, TrUserData), id(<<>>, TrUserData),
+				 TrUserData).
+
+dfp_read_field_def_s2c_test2(<<8, Rest/binary>>, Z1, Z2,
+			     F@_1, F@_2, TrUserData) ->
+    d_field_s2c_test2_int_v(Rest, Z1, Z2, F@_1, F@_2,
+			    TrUserData);
+dfp_read_field_def_s2c_test2(<<18, Rest/binary>>, Z1,
+			     Z2, F@_1, F@_2, TrUserData) ->
+    d_field_s2c_test2_string_v(Rest, Z1, Z2, F@_1, F@_2,
+			       TrUserData);
+dfp_read_field_def_s2c_test2(<<>>, 0, 0, F@_1, F@_2,
+			     _) ->
+    #s2c_test2{int_v = F@_1, string_v = F@_2};
+dfp_read_field_def_s2c_test2(Other, Z1, Z2, F@_1, F@_2,
+			     TrUserData) ->
+    dg_read_field_def_s2c_test2(Other, Z1, Z2, F@_1, F@_2,
 				TrUserData).
 
-skip_32_s2c_test(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
-		 F@_2, TrUserData) ->
-    dfp_read_field_def_s2c_test(Rest, Z1, Z2, F@_1, F@_2,
-				TrUserData).
+dg_read_field_def_s2c_test2(<<1:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData)
+    when N < 32 - 7 ->
+    dg_read_field_def_s2c_test2(Rest, N + 7, X bsl N + Acc,
+				F@_1, F@_2, TrUserData);
+dg_read_field_def_s2c_test2(<<0:1, X:7, Rest/binary>>,
+			    N, Acc, F@_1, F@_2, TrUserData) ->
+    Key = X bsl N + Acc,
+    case Key of
+      8 ->
+	  d_field_s2c_test2_int_v(Rest, 0, 0, F@_1, F@_2,
+				  TrUserData);
+      18 ->
+	  d_field_s2c_test2_string_v(Rest, 0, 0, F@_1, F@_2,
+				     TrUserData);
+      _ ->
+	  case Key band 7 of
+	    0 ->
+		skip_varint_s2c_test2(Rest, 0, 0, F@_1, F@_2,
+				      TrUserData);
+	    1 ->
+		skip_64_s2c_test2(Rest, 0, 0, F@_1, F@_2, TrUserData);
+	    2 ->
+		skip_length_delimited_s2c_test2(Rest, 0, 0, F@_1, F@_2,
+						TrUserData);
+	    3 ->
+		skip_group_s2c_test2(Rest, Key bsr 3, 0, F@_1, F@_2,
+				     TrUserData);
+	    5 ->
+		skip_32_s2c_test2(Rest, 0, 0, F@_1, F@_2, TrUserData)
+	  end
+    end;
+dg_read_field_def_s2c_test2(<<>>, 0, 0, F@_1, F@_2,
+			    _) ->
+    #s2c_test2{int_v = F@_1, string_v = F@_2}.
 
-skip_64_s2c_test(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
-		 F@_2, TrUserData) ->
-    dfp_read_field_def_s2c_test(Rest, Z1, Z2, F@_1, F@_2,
-				TrUserData).
+d_field_s2c_test2_int_v(<<1:1, X:7, Rest/binary>>, N,
+			Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    d_field_s2c_test2_int_v(Rest, N + 7, X bsl N + Acc,
+			    F@_1, F@_2, TrUserData);
+d_field_s2c_test2_int_v(<<0:1, X:7, Rest/binary>>, N,
+			Acc, _, F@_2, TrUserData) ->
+    {NewFValue, RestF} = {begin
+			    <<Res:32/signed-native>> = <<(X bsl N +
+							    Acc):32/unsigned-native>>,
+			    id(Res, TrUserData)
+			  end,
+			  Rest},
+    dfp_read_field_def_s2c_test2(RestF, 0, 0, NewFValue,
+				 F@_2, TrUserData).
+
+d_field_s2c_test2_string_v(<<1:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    d_field_s2c_test2_string_v(Rest, N + 7, X bsl N + Acc,
+			       F@_1, F@_2, TrUserData);
+d_field_s2c_test2_string_v(<<0:1, X:7, Rest/binary>>, N,
+			   Acc, F@_1, _, TrUserData) ->
+    {NewFValue, RestF} = begin
+			   Len = X bsl N + Acc,
+			   <<Bytes:Len/binary, Rest2/binary>> = Rest,
+			   {id(binary:copy(Bytes), TrUserData), Rest2}
+			 end,
+    dfp_read_field_def_s2c_test2(RestF, 0, 0, F@_1,
+				 NewFValue, TrUserData).
+
+skip_varint_s2c_test2(<<1:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, TrUserData) ->
+    skip_varint_s2c_test2(Rest, Z1, Z2, F@_1, F@_2,
+			  TrUserData);
+skip_varint_s2c_test2(<<0:1, _:7, Rest/binary>>, Z1, Z2,
+		      F@_1, F@_2, TrUserData) ->
+    dfp_read_field_def_s2c_test2(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_length_delimited_s2c_test2(<<1:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, TrUserData)
+    when N < 57 ->
+    skip_length_delimited_s2c_test2(Rest, N + 7,
+				    X bsl N + Acc, F@_1, F@_2, TrUserData);
+skip_length_delimited_s2c_test2(<<0:1, X:7,
+				  Rest/binary>>,
+				N, Acc, F@_1, F@_2, TrUserData) ->
+    Length = X bsl N + Acc,
+    <<_:Length/binary, Rest2/binary>> = Rest,
+    dfp_read_field_def_s2c_test2(Rest2, 0, 0, F@_1, F@_2,
+				 TrUserData).
+
+skip_group_s2c_test2(Bin, FNum, Z2, F@_1, F@_2,
+		     TrUserData) ->
+    {_, Rest} = read_group(Bin, FNum),
+    dfp_read_field_def_s2c_test2(Rest, 0, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_32_s2c_test2(<<_:32, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, TrUserData) ->
+    dfp_read_field_def_s2c_test2(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
+
+skip_64_s2c_test2(<<_:64, Rest/binary>>, Z1, Z2, F@_1,
+		  F@_2, TrUserData) ->
+    dfp_read_field_def_s2c_test2(Rest, Z1, Z2, F@_1, F@_2,
+				 TrUserData).
 
 read_group(Bin, FieldNum) ->
     {NumBytes, EndTagLen} = read_gr_b(Bin, 0, 0, 0, 0, FieldNum),
@@ -716,23 +1042,40 @@ merge_msgs(Prev, New, Opts)
 merge_msgs(Prev, New, MsgName, Opts) ->
     TrUserData = proplists:get_value(user_data, Opts),
     case MsgName of
-      c2s_test -> merge_msg_c2s_test(Prev, New, TrUserData);
+      c2s_test1 -> merge_msg_c2s_test1(Prev, New, TrUserData);
+      c2s_test2 -> merge_msg_c2s_test2(Prev, New, TrUserData);
       value -> merge_msg_value(Prev, New, TrUserData);
-      s2c_test -> merge_msg_s2c_test(Prev, New, TrUserData)
+      s2c_test1 -> merge_msg_s2c_test1(Prev, New, TrUserData);
+      s2c_test2 -> merge_msg_s2c_test2(Prev, New, TrUserData)
     end.
 
--compile({nowarn_unused_function,merge_msg_c2s_test/3}).
-merge_msg_c2s_test(#c2s_test{int_v = PFint_v,
-			     string_v = PFstring_v},
-		   #c2s_test{int_v = NFint_v, string_v = NFstring_v}, _) ->
-    #c2s_test{int_v =
-		  if NFint_v =:= undefined -> PFint_v;
-		     true -> NFint_v
-		  end,
-	      string_v =
-		  if NFstring_v =:= undefined -> PFstring_v;
-		     true -> NFstring_v
-		  end}.
+-compile({nowarn_unused_function,merge_msg_c2s_test1/3}).
+merge_msg_c2s_test1(#c2s_test1{int_v = PFint_v,
+			       string_v = PFstring_v},
+		    #c2s_test1{int_v = NFint_v, string_v = NFstring_v},
+		    _) ->
+    #c2s_test1{int_v =
+		   if NFint_v =:= undefined -> PFint_v;
+		      true -> NFint_v
+		   end,
+	       string_v =
+		   if NFstring_v =:= undefined -> PFstring_v;
+		      true -> NFstring_v
+		   end}.
+
+-compile({nowarn_unused_function,merge_msg_c2s_test2/3}).
+merge_msg_c2s_test2(#c2s_test2{int_v = PFint_v,
+			       string_v = PFstring_v},
+		    #c2s_test2{int_v = NFint_v, string_v = NFstring_v},
+		    _) ->
+    #c2s_test2{int_v =
+		   if NFint_v =:= undefined -> PFint_v;
+		      true -> NFint_v
+		   end,
+	       string_v =
+		   if NFstring_v =:= undefined -> PFstring_v;
+		      true -> NFstring_v
+		   end}.
 
 -compile({nowarn_unused_function,merge_msg_value/3}).
 merge_msg_value(#value{int_v = PFint_v},
@@ -742,18 +1085,33 @@ merge_msg_value(#value{int_v = PFint_v},
 		  true -> NFint_v
 	       end}.
 
--compile({nowarn_unused_function,merge_msg_s2c_test/3}).
-merge_msg_s2c_test(#s2c_test{int_v = PFint_v,
-			     string_v = PFstring_v},
-		   #s2c_test{int_v = NFint_v, string_v = NFstring_v}, _) ->
-    #s2c_test{int_v =
-		  if NFint_v =:= undefined -> PFint_v;
-		     true -> NFint_v
-		  end,
-	      string_v =
-		  if NFstring_v =:= undefined -> PFstring_v;
-		     true -> NFstring_v
-		  end}.
+-compile({nowarn_unused_function,merge_msg_s2c_test1/3}).
+merge_msg_s2c_test1(#s2c_test1{int_v = PFint_v,
+			       string_v = PFstring_v},
+		    #s2c_test1{int_v = NFint_v, string_v = NFstring_v},
+		    _) ->
+    #s2c_test1{int_v =
+		   if NFint_v =:= undefined -> PFint_v;
+		      true -> NFint_v
+		   end,
+	       string_v =
+		   if NFstring_v =:= undefined -> PFstring_v;
+		      true -> NFstring_v
+		   end}.
+
+-compile({nowarn_unused_function,merge_msg_s2c_test2/3}).
+merge_msg_s2c_test2(#s2c_test2{int_v = PFint_v,
+			       string_v = PFstring_v},
+		    #s2c_test2{int_v = NFint_v, string_v = NFstring_v},
+		    _) ->
+    #s2c_test2{int_v =
+		   if NFint_v =:= undefined -> PFint_v;
+		      true -> NFint_v
+		   end,
+	       string_v =
+		   if NFstring_v =:= undefined -> PFstring_v;
+		      true -> NFstring_v
+		   end}.
 
 
 verify_msg(Msg) when tuple_size(Msg) >= 1 ->
@@ -771,17 +1129,23 @@ verify_msg(X, _Opts) ->
 verify_msg(Msg, MsgName, Opts) ->
     TrUserData = proplists:get_value(user_data, Opts),
     case MsgName of
-      c2s_test -> v_msg_c2s_test(Msg, [MsgName], TrUserData);
+      c2s_test1 ->
+	  v_msg_c2s_test1(Msg, [MsgName], TrUserData);
+      c2s_test2 ->
+	  v_msg_c2s_test2(Msg, [MsgName], TrUserData);
       value -> v_msg_value(Msg, [MsgName], TrUserData);
-      s2c_test -> v_msg_s2c_test(Msg, [MsgName], TrUserData);
+      s2c_test1 ->
+	  v_msg_s2c_test1(Msg, [MsgName], TrUserData);
+      s2c_test2 ->
+	  v_msg_s2c_test2(Msg, [MsgName], TrUserData);
       _ -> mk_type_error(not_a_known_message, Msg, [])
     end.
 
 
--compile({nowarn_unused_function,v_msg_c2s_test/3}).
--dialyzer({nowarn_function,v_msg_c2s_test/3}).
-v_msg_c2s_test(#c2s_test{int_v = F1, string_v = F2},
-	       Path, TrUserData) ->
+-compile({nowarn_unused_function,v_msg_c2s_test1/3}).
+-dialyzer({nowarn_function,v_msg_c2s_test1/3}).
+v_msg_c2s_test1(#c2s_test1{int_v = F1, string_v = F2},
+		Path, TrUserData) ->
     if F1 == undefined -> ok;
        true -> v_type_int32(F1, [int_v | Path], TrUserData)
     end,
@@ -789,8 +1153,22 @@ v_msg_c2s_test(#c2s_test{int_v = F1, string_v = F2},
        true -> v_type_string(F2, [string_v | Path], TrUserData)
     end,
     ok;
-v_msg_c2s_test(X, Path, _TrUserData) ->
-    mk_type_error({expected_msg, c2s_test}, X, Path).
+v_msg_c2s_test1(X, Path, _TrUserData) ->
+    mk_type_error({expected_msg, c2s_test1}, X, Path).
+
+-compile({nowarn_unused_function,v_msg_c2s_test2/3}).
+-dialyzer({nowarn_function,v_msg_c2s_test2/3}).
+v_msg_c2s_test2(#c2s_test2{int_v = F1, string_v = F2},
+		Path, TrUserData) ->
+    if F1 == undefined -> ok;
+       true -> v_type_int32(F1, [int_v | Path], TrUserData)
+    end,
+    if F2 == undefined -> ok;
+       true -> v_type_string(F2, [string_v | Path], TrUserData)
+    end,
+    ok;
+v_msg_c2s_test2(X, Path, _TrUserData) ->
+    mk_type_error({expected_msg, c2s_test2}, X, Path).
 
 -compile({nowarn_unused_function,v_msg_value/3}).
 -dialyzer({nowarn_function,v_msg_value/3}).
@@ -802,10 +1180,10 @@ v_msg_value(#value{int_v = F1}, Path, TrUserData) ->
 v_msg_value(X, Path, _TrUserData) ->
     mk_type_error({expected_msg, value}, X, Path).
 
--compile({nowarn_unused_function,v_msg_s2c_test/3}).
--dialyzer({nowarn_function,v_msg_s2c_test/3}).
-v_msg_s2c_test(#s2c_test{int_v = F1, string_v = F2},
-	       Path, TrUserData) ->
+-compile({nowarn_unused_function,v_msg_s2c_test1/3}).
+-dialyzer({nowarn_function,v_msg_s2c_test1/3}).
+v_msg_s2c_test1(#s2c_test1{int_v = F1, string_v = F2},
+		Path, TrUserData) ->
     if F1 == undefined -> ok;
        true -> v_type_int32(F1, [int_v | Path], TrUserData)
     end,
@@ -813,8 +1191,22 @@ v_msg_s2c_test(#s2c_test{int_v = F1, string_v = F2},
        true -> v_type_string(F2, [string_v | Path], TrUserData)
     end,
     ok;
-v_msg_s2c_test(X, Path, _TrUserData) ->
-    mk_type_error({expected_msg, s2c_test}, X, Path).
+v_msg_s2c_test1(X, Path, _TrUserData) ->
+    mk_type_error({expected_msg, s2c_test1}, X, Path).
+
+-compile({nowarn_unused_function,v_msg_s2c_test2/3}).
+-dialyzer({nowarn_function,v_msg_s2c_test2/3}).
+v_msg_s2c_test2(#s2c_test2{int_v = F1, string_v = F2},
+		Path, TrUserData) ->
+    if F1 == undefined -> ok;
+       true -> v_type_int32(F1, [int_v | Path], TrUserData)
+    end,
+    if F2 == undefined -> ok;
+       true -> v_type_string(F2, [string_v | Path], TrUserData)
+    end,
+    ok;
+v_msg_s2c_test2(X, Path, _TrUserData) ->
+    mk_type_error({expected_msg, s2c_test2}, X, Path).
 
 -compile({nowarn_unused_function,v_type_int32/3}).
 -dialyzer({nowarn_function,v_type_int32/3}).
@@ -885,7 +1277,12 @@ cons(Elem, Acc, _TrUserData) -> [Elem | Acc].
 
 
 get_msg_defs() ->
-    [{{msg, c2s_test},
+    [{{msg, c2s_test1},
+      [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
+	      occurrence = optional, opts = []},
+       #field{name = string_v, fnum = 2, rnum = 3,
+	      type = string, occurrence = optional, opts = []}]},
+     {{msg, c2s_test2},
       [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
 	      occurrence = optional, opts = []},
        #field{name = string_v, fnum = 2, rnum = 3,
@@ -893,20 +1290,27 @@ get_msg_defs() ->
      {{msg, value},
       [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
 	      occurrence = optional, opts = []}]},
-     {{msg, s2c_test},
+     {{msg, s2c_test1},
+      [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
+	      occurrence = optional, opts = []},
+       #field{name = string_v, fnum = 2, rnum = 3,
+	      type = string, occurrence = optional, opts = []}]},
+     {{msg, s2c_test2},
       [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
 	      occurrence = optional, opts = []},
        #field{name = string_v, fnum = 2, rnum = 3,
 	      type = string, occurrence = optional, opts = []}]}].
 
 
-get_msg_names() -> [c2s_test, value, s2c_test].
+get_msg_names() ->
+    [c2s_test1, c2s_test2, value, s2c_test1, s2c_test2].
 
 
 get_group_names() -> [].
 
 
-get_msg_or_group_names() -> [c2s_test, value, s2c_test].
+get_msg_or_group_names() ->
+    [c2s_test1, c2s_test2, value, s2c_test1, s2c_test2].
 
 
 get_enum_names() -> [].
@@ -924,7 +1328,12 @@ fetch_enum_def(EnumName) ->
     erlang:error({no_such_enum, EnumName}).
 
 
-find_msg_def(c2s_test) ->
+find_msg_def(c2s_test1) ->
+    [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
+	    occurrence = optional, opts = []},
+     #field{name = string_v, fnum = 2, rnum = 3,
+	    type = string, occurrence = optional, opts = []}];
+find_msg_def(c2s_test2) ->
     [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
 	    occurrence = optional, opts = []},
      #field{name = string_v, fnum = 2, rnum = 3,
@@ -932,7 +1341,12 @@ find_msg_def(c2s_test) ->
 find_msg_def(value) ->
     [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
 	    occurrence = optional, opts = []}];
-find_msg_def(s2c_test) ->
+find_msg_def(s2c_test1) ->
+    [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
+	    occurrence = optional, opts = []},
+     #field{name = string_v, fnum = 2, rnum = 3,
+	    type = string, occurrence = optional, opts = []}];
+find_msg_def(s2c_test2) ->
     [#field{name = int_v, fnum = 1, rnum = 2, type = int32,
 	    occurrence = optional, opts = []},
      #field{name = string_v, fnum = 2, rnum = 3,
@@ -1002,15 +1416,19 @@ service_and_rpc_name_to_fqbins(S, R) ->
     error({gpb_error, {badservice_or_rpc, {S, R}}}).
 
 
-fqbin_to_msg_name(<<"test.c2s_test">>) -> c2s_test;
+fqbin_to_msg_name(<<"test.c2s_test1">>) -> c2s_test1;
+fqbin_to_msg_name(<<"test.c2s_test2">>) -> c2s_test2;
 fqbin_to_msg_name(<<"test.value">>) -> value;
-fqbin_to_msg_name(<<"test.s2c_test">>) -> s2c_test;
+fqbin_to_msg_name(<<"test.s2c_test1">>) -> s2c_test1;
+fqbin_to_msg_name(<<"test.s2c_test2">>) -> s2c_test2;
 fqbin_to_msg_name(E) -> error({gpb_error, {badmsg, E}}).
 
 
-msg_name_to_fqbin(c2s_test) -> <<"test.c2s_test">>;
+msg_name_to_fqbin(c2s_test1) -> <<"test.c2s_test1">>;
+msg_name_to_fqbin(c2s_test2) -> <<"test.c2s_test2">>;
 msg_name_to_fqbin(value) -> <<"test.value">>;
-msg_name_to_fqbin(s2c_test) -> <<"test.s2c_test">>;
+msg_name_to_fqbin(s2c_test1) -> <<"test.s2c_test1">>;
+msg_name_to_fqbin(s2c_test2) -> <<"test.s2c_test2">>;
 msg_name_to_fqbin(E) -> error({gpb_error, {badmsg, E}}).
 
 
@@ -1052,7 +1470,7 @@ get_all_proto_names() -> ["test"].
 
 
 get_msg_containment("test") ->
-    [c2s_test, s2c_test, value];
+    [c2s_test1, c2s_test2, s2c_test1, s2c_test2, value];
 get_msg_containment(P) ->
     error({gpb_error, {badproto, P}}).
 
@@ -1077,8 +1495,10 @@ get_enum_containment(P) ->
     error({gpb_error, {badproto, P}}).
 
 
-get_proto_by_msg_name_as_fqbin(<<"test.s2c_test">>) -> "test";
-get_proto_by_msg_name_as_fqbin(<<"test.c2s_test">>) -> "test";
+get_proto_by_msg_name_as_fqbin(<<"test.s2c_test1">>) -> "test";
+get_proto_by_msg_name_as_fqbin(<<"test.c2s_test1">>) -> "test";
+get_proto_by_msg_name_as_fqbin(<<"test.s2c_test2">>) -> "test";
+get_proto_by_msg_name_as_fqbin(<<"test.c2s_test2">>) -> "test";
 get_proto_by_msg_name_as_fqbin(<<"test.value">>) -> "test";
 get_proto_by_msg_name_as_fqbin(E) ->
     error({gpb_error, {badmsg, E}}).
