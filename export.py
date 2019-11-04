@@ -14,7 +14,7 @@ include_path = './include/'
 include_file = 'hrl_proto.hrl'
 data_path = './src/net/proto/'
 data_file = 'data_proto.erl'
-proto_range = 1000
+proto_range = 100
 module_name_suffix = '_pb'
 
 erl_text_prefix = '''%%%-------------------------------------------------------------------

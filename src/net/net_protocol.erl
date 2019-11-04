@@ -92,7 +92,7 @@ init(Ref, Socket, Transport, Opts) ->
     ok = Transport:setopts(Socket, [{active, true} | ?TCP_OPTIONS]),
     erlang:put(net_tcp_socket, Socket),
     RandInterval = util:rand(0, ?NET_STAT_INTERVAL * 1000),
-    Stat = #stat{rec_time = util_time:long_unix_time() + RandInterval},
+    Stat = #stat{rec_time = util_time:long_unixtime() + RandInterval},
     State =
         #net_state{
             socket = Socket,
@@ -117,7 +117,7 @@ init(Ref, Socket, Transport, Opts) ->
 %% @end
 %%--------------------------------------------------------------------
 handle_call(proc_check, _From, #net_state{last_packet_time = Time} = State) ->
-    Now = util_time:long_unix_time(),
+    Now = util_time:long_unixtime(),
     case Now - Time of
         PassTime when PassTime >= ?NET_HEART_TIMEOUT * 1000 ->
             ?WARNING("net_heart_timeout ~p", [PassTime]),
@@ -263,7 +263,7 @@ handle(Message, #net_state{handler = Mod, handler_state = HState} = NetState) ->
 
 %% 网络包水位
 water_down(#net_state{water_lv = WaterLv, last_packet_time = Time} = NetState) ->
-    Now = util_time:long_unix_time(),
+    Now = util_time:long_unixtime(),
     Down = erlang:max(0, (Now - Time) * ?NET_PACKET_PER_SEC div 1000),
     WaterLv1 = erlang:max(WaterLv - Down, 0),
     NetState#net_state{water_lv = WaterLv1, last_packet_time = Now}.

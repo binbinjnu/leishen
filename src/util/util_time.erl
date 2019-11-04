@@ -11,22 +11,22 @@
 
 %% API
 -export([
-    unix_time/0,
-    long_unix_time/0,
+    unixtime/0,
+    long_unixtime/0,
     localtime/0
 ]).
 
 %% 单位：秒
-unix_time() ->
+unixtime() ->
     erlang:system_time(seconds).
 
 %% 单位：毫秒
-long_unix_time() ->
+long_unixtime() ->
     erlang:system_time(milli_seconds).
 
 %% 本地时间
 localtime() ->
-    timestamp_to_localtime(unix_time()).
+    timestamp_to_localtime(unixtime()).
 
 %% 时间戳转本地时间
 timestamp_to_localtime(T) ->

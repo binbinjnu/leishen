@@ -12,21 +12,24 @@
 %% API
 -export([
     route_msg/3,
-%%    route_evt/3,
+    route_evt/3,
     msg_mod/1
 ]).
 
+%% 客户端消息的路由
 route_msg(MsgID, Data, State) ->
     Handler = msg_mod(MsgID),
     Handler:handle_msg(MsgID, Data, State).
 
-%%route_evt(MsgID, Data, State) ->
-%%    Handler = msg_mod(MsgID),
-%%    Handler:handle_evt(MsgID, Data, State).
+%% 服务端事件路由
+route_evt(MsgID, Data, State) ->
+    Handler = msg_mod(MsgID),
+    Handler:handle_evt(MsgID, Data, State).
 
+%% 消息路由
 msg_mod(MsgID) ->
     case MsgID div 1000 of
-        10 -> handle_login;
-        11 -> handle_player;
+        100 -> handle_login;
+        101 -> handle_player;
         _ ->  handle_err
     end.

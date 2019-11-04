@@ -7,6 +7,18 @@
   {git,"https://github.com/binbinjnu/erlang-lz4.git",
        {ref,"091ce915ee0a630e33753f90374a8e2ee58432c0"}},
   0},
+ {<<"mysql">>,
+  {git,"https://github.com/mysql-otp/mysql-otp.git",
+       {ref,"fba7fee3b15917cce77c0dc2c1f2a2e132e108ab"}},
+  1},
+ {<<"mysqlpool">>,
+  {git,"https://github.com/mysql-otp/mysql-otp-poolboy.git",
+       {ref,"01395571eefa5d9e14d5273706c80b33a4acb8f9"}},
+  0},
+ {<<"poolboy">>,
+  {git,"https://github.com/devinus/poolboy.git",
+       {ref,"29be47db8c2be38b18c908e43a80ebb7b9b6116b"}},
+  1},
  {<<"ranch">>,{pkg,<<"ranch">>,<<"1.7.1">>},0}]}.
 [
 {pkg_hash,[

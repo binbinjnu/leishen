@@ -100,7 +100,7 @@ do_debug_msg(Type, <<Len:16, MsgBin:Len/binary, Res/binary>>, Acc) ->
                 case data_proto:Fun(MsgID) of
                     {MsgName, MsgPb} ->
                         Msg = MsgPb:decode(MsgName, Bin),
-                        Rec = {erlang:time(), util_time:long_unix_time(), Type, MsgID, Msg},
+                        Rec = {erlang:time(), util_time:long_unixtime(), Type, MsgID, Msg},
                         [Rec | Acc];
                     _ ->
                         Acc

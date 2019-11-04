@@ -15,8 +15,7 @@
 
 %% API
 -export([reg/2, unreg/2]).
--export([set_timer/3, cancel_timer/2]).
--export([start_link/0, init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
+-export([start/0, start_link/0, init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(state, {}).
 
@@ -26,29 +25,8 @@ reg(Pid, Time) ->
 unreg(Pid, Time) ->
     gen_server:cast(?MODULE, {del_timer, Pid, Time}).
 
-set_timer(Time, Pos, State) ->
-    case erlang:element(Pos, State) of
-        ?undefined ->
-            Ref = erlang:start_timer(Time, self(), doloop),
-            erlang:setelement(Pos, State, Ref);
-        _Ref ->
-            State
-    end.
-
-cancel_timer(Pos, State) ->
-    case erlang:element(Pos, State) of
-        Ref when is_reference(Ref) ->
-            erlang:cancel_timer(Ref),
-            receive
-                {timeout, Ref, _} -> ok
-            after
-                0 -> ok
-            end,
-            erlang:setelement(Pos, State, ?undefined);
-        _ ->
-            erlang:setelement(Pos, State, ?undefined)
-    end.
-
+start() ->
+    temp_sup:start_temp_child(?MODULE).
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -68,7 +46,7 @@ handle_cast({add_timer, Pid, Time}, State) ->
     case get({timer, Time}) of
         undefined ->
             put({timer, Time}, [Pid]),
-            Now = longunixtime(),
+            Now = util_time:long_unixtime(),
             erlang:send_after(Time, self(), {loop, Time, Now + Time});
         L ->
             case lists:member(Pid, L) of
@@ -99,7 +77,7 @@ handle_cast(Msg, State) ->
 
 handle_info({loop, Time, TickTime}, State) ->
     NextTime = TickTime + Time,
-    Now = longunixtime(),
+    Now = util_time:long_unixtime(),
     case NextTime > Now of
         ?true ->
             erlang:send_after(NextTime - Now, self(), {loop, Time, NextTime});

@@ -9,6 +9,7 @@
 -module(net_handler).
 -author("Administrator").
 
+-include("record.hrl").
 -include("hrl_common.hrl").
 -include("hrl_logs.hrl").
 -include("hrl_net.hrl").

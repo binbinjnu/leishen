@@ -14,7 +14,14 @@
     rand/2,
     term_to_string/1,
     term_to_bitstring/1,
-    get_call_from/0
+    get_call_from/0,
+    erlang_get/2,
+
+    process_name/0,
+    process_name/1,
+
+    filter_opts/2,
+    deny_opts/2
 ]).
 
 rand(Same, Same) ->
@@ -71,3 +78,37 @@ term_to_string(Term) ->
 
 term_to_bitstring(Term) ->
     erlang:list_to_bitstring(io_lib:format("~999999p", [Term])).
+
+%% erlang:get带默认值
+erlang_get(Key, Default) ->
+    case erlang:get(Key) of
+        undefined -> Default;
+        Res -> Res
+    end.
+
+%% 获取process_name
+process_name() ->
+    process_name(self()).
+
+process_name(Pid) ->
+    case erlang:process_info(Pid, registered_name) of
+        {registered_name, Name} -> Name;
+        _ -> Pid
+    end.
+
+%% 过滤opts
+filter_opts(Opts, Allows) ->
+    F = fun ({O, _}) -> lists:member(O, Allows);
+        (O) -> lists:member(O, Allows)
+        end,
+    [Op || Op <- Opts, F(Op)].
+
+%% 确保没有不允许的参数
+deny_opts(Opts, Denies) ->
+    F = fun ({O, _}) -> lists:member(O, Denies);
+        (O) -> lists:member(O, Denies)
+        end,
+    case [Op || Op <- Opts, F(Op)] of
+        [] -> ok;
+        List -> erlang:error({invalid_opts, List})
+    end.
