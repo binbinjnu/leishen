@@ -24,6 +24,8 @@
     stop_debug/0
 ]).
 
+-define(NET_PROTO_DEBUG_PATH, "./logs/proto/"). % 网络协议输出路径
+
 init(InitTime) ->
     case should_init() of
         ?true ->
@@ -52,7 +54,7 @@ start_debug(InitTime) ->
         ?false ->
             UID = erlang:get(user_id),
             Filename = lists:concat(["pt_", UID, ".txt"]),
-            FullFn = filename:join(config:get(net_proto_debug_path), Filename),
+            FullFn = filename:join(?NET_PROTO_DEBUG_PATH, Filename),
             filelib:ensure_dir(FullFn),
             case file:read_file_info(FullFn) of
                 {ok, #file_info{ctime = {CDate, _CTime}}} ->

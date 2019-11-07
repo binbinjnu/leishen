@@ -10,6 +10,7 @@
 -author("Administrator").
 
 -include("hrl_common.hrl").
+-include("hrl_logs.hrl").
 %% API
 
 -export([
@@ -25,7 +26,7 @@ init(Tag, App) ->
     catch
         error:undef ->
             Envs = application:get_all_env(App),
-            gen(Tag, App, Envs),
+            gen(Tag, App, [{app, App} | Envs]),
             ok
     end.
 

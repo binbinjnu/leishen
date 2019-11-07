@@ -2,7 +2,7 @@
 %%% @author Administrator
 %%% @copyright (C) 2019, <COMPANY>
 %%% @doc
-%%%
+%%%     网络协议输出数量控制进程
 %%% @end
 %%% Created : 30. 10月 2019 20:53
 %%%-------------------------------------------------------------------
@@ -27,8 +27,8 @@
     code_change/3
 ]).
 
-
 -define(TIMEOUT, 100).
+
 -record(state, {pid_uids = #{}, uid_pids = #{}, max_logs = 0}).
 
 start() ->

@@ -12,10 +12,14 @@
 -define(X2_LOG_HRL, true).
 
 -define(INFO(Format, Args), logs_api:info_msg(?MODULE,?LINE, ?FUNCTION_NAME, ?FUNCTION_ARITY, Format, Args)).
+-define(INFO(Format), ?INFO(Format, [])).
 -define(NOTICE(Format, Args), logs_api:notice_msg(?MODULE,?LINE, ?FUNCTION_NAME, ?FUNCTION_ARITY, Format, Args)).
+-define(NOTICE(Format), ?NOTICE(Format, [])).
 -define(WARNING(Format, Args), logs_api:warning_msg(?MODULE,?LINE, ?FUNCTION_NAME, ?FUNCTION_ARITY, Format, Args)).
+-define(WARNING(Format), ?WARNING(Format, [])).
 -define(ERROR(Format, Args, Stack), logs_api:error_msg(?MODULE,?LINE, ?FUNCTION_NAME, ?FUNCTION_ARITY, Format, Args, Stack)).
 -define(ERROR(Format, Args), ?ERROR(Format, Args, [])).
+-define(ERROR(Format), ?ERROR(Format, [])).
 
 -define(FORCE_NOTICE(Format, Args), logs_api:force_notice_msg(?MODULE,?LINE, Format, Args)).
 -define(FORCE_WARNING(Format, Args), logs_api:force_warning_msg(?MODULE,?LINE, Format, Args)).

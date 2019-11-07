@@ -126,9 +126,9 @@ world_event(EvtID, Content) ->
 
 do_world_event(Group, EvtID, Content) ->
     Slots = lists:seq(1, ?WORLD_SLOTS),
-    fg_group:mcast({route_evt, EvtID, Content}, Group, Slots),
+    group_api:mcast({route_evt, EvtID, Content}, Group, Slots),
     ok.
 
 join_world(UUID) ->
     Slot = UUID rem ?WORLD_SLOTS + 1,
-    fg_group:join(self(), world_player, Slot).
+    group_api:join(self(), world_player, Slot).

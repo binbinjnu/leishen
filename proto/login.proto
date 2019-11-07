@@ -1,0 +1,35 @@
+syntax = "proto3";
+package login;
+// 登录协议, 包括: login相关协议和心跳包
+// base 100
+
+// 心跳包
+// 10000
+message c2s_heartbeat
+{
+}
+
+// 10000
+message s2c_heartbeat
+{
+    int64 timestamp = 1;    // 时间戳 ms
+}
+
+// 登录请求
+// 10001
+message c2s_login {
+    string account = 1;     // 账号名
+    string passwd = 2;      // 密码
+    string machine_id = 3;  // 机器码
+    int32 terminal = 4;     // 终端: 1:IOS,2:Android 3:Other
+    string model = 5;       // 机型
+    string channel = 6;     // 渠道名
+}
+
+// 登录返回
+// 10001
+message s2c_login {
+    int32 code = 1;         // 状态码 0;正常, 1:xx, 2:yy  默认0
+    int32 user_id = 2;      // 角色id
+}
+

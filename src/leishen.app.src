@@ -8,7 +8,8 @@
     stdlib,
     lager,
     ranch,
-    mysql_poolboy
+    mysql_poolboy,
+    erlcron
 %%    lz4
    ]},
   {env,[]},

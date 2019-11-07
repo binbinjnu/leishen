@@ -11,14 +11,18 @@
 
 
 %% hello.proto get
-get(c2s_hello) -> {10101, hello_pb};
-get(s2c_hello) -> {10101, hello_pb};
+get(c2s_hello) -> {59801, hello_pb};
+get(s2c_hello) -> {59801, hello_pb};
+
+%% login.proto get
+get(c2s_heartbeat) -> {10000, login_pb};
+get(s2c_heartbeat) -> {10000, login_pb};
 
 %% test.proto get
-get(c2s_test1) -> {10001, test_pb};
-get(c2s_test2) -> {10002, test_pb};
-get(s2c_test1) -> {10001, test_pb};
-get(s2c_test2) -> {10002, test_pb};
+get(c2s_test1) -> {59901, test_pb};
+get(c2s_test2) -> {59902, test_pb};
+get(s2c_test1) -> {59901, test_pb};
+get(s2c_test2) -> {59902, test_pb};
 
 get(_ID) ->
     ?WARNING("Cannot get ~p, ~p", [_ID, util:get_call_from()]),
@@ -26,11 +30,14 @@ get(_ID) ->
 
 
 %% hello.proto get_c2s
-get_c2s(10101) -> {c2s_hello, hello_pb};
+get_c2s(59801) -> {c2s_hello, hello_pb};
+
+%% login.proto get_c2s
+get_c2s(10000) -> {c2s_heartbeat, login_pb};
 
 %% test.proto get_c2s
-get_c2s(10001) -> {c2s_test1, test_pb};
-get_c2s(10002) -> {c2s_test2, test_pb};
+get_c2s(59901) -> {c2s_test1, test_pb};
+get_c2s(59902) -> {c2s_test2, test_pb};
 
 get_c2s(_ID) ->
     ?WARNING("Cannot get_c2s ~p, ~p", [_ID, util:get_call_from()]),
@@ -38,11 +45,14 @@ get_c2s(_ID) ->
 
 
 %% hello.proto get_s2c
-get_s2c(10101) -> {s2c_hello, hello_pb};
+get_s2c(59801) -> {s2c_hello, hello_pb};
+
+%% login.proto get_s2c
+get_s2c(10000) -> {s2c_heartbeat, login_pb};
 
 %% test.proto get_s2c
-get_s2c(10001) -> {s2c_test1, test_pb};
-get_s2c(10002) -> {s2c_test2, test_pb};
+get_s2c(59901) -> {s2c_test1, test_pb};
+get_s2c(59902) -> {s2c_test2, test_pb};
 
 get_s2c(_ID) ->
     ?WARNING("Cannot get_s2c ~p, ~p", [_ID, util:get_call_from()]),

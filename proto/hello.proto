@@ -1,9 +1,9 @@
 syntax = "proto3";
 package hello;
-// base 101
+// base 598
 
 // 测试协议
-// 10101
+// 59801
 message c2s_hello
 {
     int32 int_v = 1;
@@ -15,7 +15,7 @@ message value {
 }
 
 // 测试协议2
-// 10101
+// 59801
 message s2c_hello
 {
     int32 int_v = 1;

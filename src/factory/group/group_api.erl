@@ -239,9 +239,4 @@ groups(GroupType) ->
 
 
 group_svr(GroupType) ->
-    case ets:lookup(fg_group, GroupType) of
-        [{_, GPid}] ->
-            GPid;
-        _ ->
-            erlang:error({undefined_group_type, GroupType})
-    end.
+    group_manager_gsvr:group_pid(GroupType).

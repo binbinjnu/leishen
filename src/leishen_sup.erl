@@ -13,7 +13,8 @@
 -export([start_link/0]).
 -export([
     start_child/1,
-    start_child/2
+    start_child/2,
+    start_child/3
 ]).
 
 -export([init/1]).

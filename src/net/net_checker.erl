@@ -4,14 +4,14 @@
 %%% @doc
 %%%
 %%% @end
-%%% Created : 04. 11月 2019 15:51
+%%% Created : 05. 11月 2019 18:43
 %%%-------------------------------------------------------------------
--module(player_checker).
+-module(net_checker).
+-author("Administrator").
 
+%% API
 -export([reg/0]).
 -export([start_link/0]).
-
--define(SLOTS_NUM, 60).
 
 reg() ->
     Pid = self(),
@@ -20,9 +20,10 @@ reg() ->
 start_link() ->
     Args = #{
         slot_num => 60,
-        interval => 900,
-        kill_msg_q => 2000,
-        check_msg_q => 9999 % 设置成很长, 比kill_msg_q长, 不会做call检查
+        interval => 1000,
+        kill_msg_q => 200,      %% 最大消息队列长度
+        check_msg_q => 0,
+        check_timeout => 10000  %% 网络进程检查超时, ms
     },
     proc_checker_gsvr:start_link(?MODULE, Args).
 

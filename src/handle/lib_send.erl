@@ -36,7 +36,7 @@ send(Msg) ->
         SPid when is_pid(SPid) ->
             net_api:pack_send(SPid, Msg);
         _ ->
-            ?WARNING(["Cannot send. Call from:~n", util:get_call_stack()])
+            ?WARNING("Cannot send. Call from:~n", util:get_call_stack())
     end.
 
 send(_, []) ->

@@ -1,16 +1,16 @@
 syntax = "proto3";
 package test;
-// base 100
+// base 599
 
 // 测试协议
-// 10001
+// 59901
 message c2s_test1 {
     int32 int_v = 1;
     string string_v = 2;
 }
 
 // 测试协议
-// 10002
+// 59902
 message c2s_test2 {
     int32 int_v = 1;
     string string_v = 2;
@@ -21,20 +21,20 @@ message value {
 }
 
 // 测试协议2
-// 10001
+// 59901
 message s2c_test1 {
     int32 int_v = 1;
     string string_v = 2;
 }
 
 // 测试协议2
-// 10002
+// 59902
 message s2c_test2 {
     int32 int_v = 1;
     string string_v = 2;
 }
 
-// // 10001
+// // 59901
 // message c2s_same_test {
 //     int32 int_v = 1;
 //     string string_v = 2;

@@ -25,11 +25,11 @@
     is_dev/0
 ]).
 
--define(APP, leishen).
 -define(CONFIG_MODULE, config_values).
 
 start() ->
-    config_maker:init(?CONFIG_MODULE, ?APP).
+    {ok, App} = application:get_application(),
+    config_maker:init(?CONFIG_MODULE, App).
 
 config_tag() ->
     ?CONFIG_MODULE.
@@ -49,11 +49,12 @@ get(Par) ->
     end.
 
 get_app() ->
-    ?APP.
+    ?MODULE:get(app).
 
 %% 慎用! 一般仅限于控制台应急使用
 set(Key, Val) ->
-    config_maker:set(?CONFIG_MODULE, ?APP, Key, Val).
+    App = get_app(),
+    config_maker:set(?CONFIG_MODULE, App, Key, Val).
 
 
 is_dev() ->

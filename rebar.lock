@@ -1,6 +1,10 @@
 {"1.1.0",
 [{<<"cowboy">>,{pkg,<<"cowboy">>,<<"2.7.0">>},0},
  {<<"cowlib">>,{pkg,<<"cowlib">>,<<"2.8.0">>},1},
+ {<<"erlcron">>,
+  {git,"https://github.com/binbinjnu/erlcron.git",
+       {ref,"1a35189aaec38547503381bfe5a9c0d48b458d07"}},
+  0},
  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.9">>},1},
  {<<"lager">>,{pkg,<<"lager">>,<<"3.8.0">>},0},
  {<<"lz4">>,
@@ -19,7 +23,11 @@
   {git,"https://github.com/devinus/poolboy.git",
        {ref,"29be47db8c2be38b18c908e43a80ebb7b9b6116b"}},
   1},
- {<<"ranch">>,{pkg,<<"ranch">>,<<"1.7.1">>},0}]}.
+ {<<"ranch">>,{pkg,<<"ranch">>,<<"1.7.1">>},0},
+ {<<"rebar_vsn_plugin">>,
+  {git,"https://github.com/erlware/rebar_vsn_plugin.git",
+       {ref,"fd40c960c7912193631d948fe962e1162a8d1334"}},
+  1}]}.
 [
 {pkg_hash,[
  {<<"cowboy">>, <<"91ED100138A764355F43316B1D23D7FF6BDB0DE4EA618CB5D8677C93A7A2F115">>},

@@ -14,7 +14,7 @@
 -include("hrl_common.hrl").
 
 %% API
--export([new/2, assign/3]).
+-export([new/2, assign/3, group_pid/1]).
 
 -export([
     start_link/0,
@@ -28,6 +28,15 @@
 
 -record(state, {groups = #{}}).
 -define(ETS_TAB, group).
+
+%% 群组的进程pid
+group_pid(GroupType) ->
+    case ets:lookup(?ETS_TAB, GroupType) of
+        [{_, GPid}] ->
+            GPid;
+        _ ->
+            erlang:error({undefined_group_type, GroupType})
+    end.
 
 %% 新建广播组
 new(GroupType, Opts) ->
@@ -99,13 +108,13 @@ do_call({assign, GroupType, Pid}, _From, State) ->
 do_call({new, GroupType, Opts}, _From, #state{groups = Groups} = State) ->
     case proplists:get_bool(noname, Opts) of
         ?true -> % 无名广播组不注册, 不monitor, 不可重复
-            {ok, Pid} = group_sup:start_group([GroupType, Opts]),
+            {ok, Pid} = group_sup:start_child([GroupType, Opts]),
             Groups1 = maps:put(Pid, {noname, GroupType}, Groups),
             {reply, {ok, Pid}, State#state{groups = Groups1}};
         ?false ->
             case ets:lookup(?ETS_TAB, GroupType) of
                 [] ->
-                    {ok, Pid} = group_sup:start_group([GroupType, Opts]),
+                    {ok, Pid} = group_sup:start_child([GroupType, Opts]),
                     Groups1 = maps:put(Pid, {name, GroupType}, Groups),
                     register_group(GroupType, Pid),
                     {reply, {ok, Pid}, State#state{groups = Groups1}};

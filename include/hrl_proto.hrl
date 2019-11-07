@@ -1,11 +1,15 @@
 %% proto协议中的协议名对应协议号宏定义
 
 %% hello.proto 协议号宏定义
--define(c2s_hello, 10101).
--define(s2c_hello, 10101).
+-define(c2s_hello, 59801).
+-define(s2c_hello, 59801).
+
+%% login.proto 协议号宏定义
+-define(c2s_heartbeat, 10000).
+-define(s2c_heartbeat, 10000).
 
 %% test.proto 协议号宏定义
--define(c2s_test1, 10001).
--define(c2s_test2, 10002).
--define(s2c_test1, 10001).
--define(s2c_test2, 10002).
+-define(c2s_test1, 59901).
+-define(c2s_test2, 59902).
+-define(s2c_test1, 59901).
+-define(s2c_test2, 59902).
