@@ -19,7 +19,7 @@
 %% 客户端消息的路由
 route_msg(MsgID, Data, State) ->
     Handler = msg_mod(MsgID),
-    Handler:handle_msg(MsgID, Data, State).
+    Handler:handle_msg(Data, State).
 
 %% 服务端事件路由
 route_evt(MsgID, Data, State) ->

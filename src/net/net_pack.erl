@@ -42,7 +42,7 @@ do_pack(Msg) when is_tuple(Msg)->
     case data_proto:get(MsgName) of
         {MsgID, MsgPb} ->
             try
-                Content = MsgPb:encode(Msg),
+                Content = MsgPb:encode_msg(Msg),
                 Len = erlang:iolist_size(Content) + 2,
                 [<<Len:16, MsgID:16>>, Content]
             catch _:_ ->
@@ -95,7 +95,7 @@ unpacks(_E, Acc) ->
 decode(MsgID, Bin) -> % 新协议
     case data_proto:get_c2s(MsgID) of
         {MsgName, MsgPb} ->
-            MsgPb:decode(MsgName, Bin);
+            MsgPb:decode_msg(Bin, MsgName);
         _ ->
             error
     end.

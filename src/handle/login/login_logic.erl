@@ -9,5 +9,24 @@
 -module(login_logic).
 -author("Administrator").
 
+-include("hrl_logs.hrl").
+-include("proto_pb.hrl").
+
+
 %% API
--export([]).
+-export([login/2]).
+
+login(Req, State) ->
+    #'C0000001'{
+        'AccountName' = AccountName,
+        'Password' = Password,
+        'MachineID' = MachineID,
+        'PlatFormID' = PlatFormID,
+        'IPAddr' = IPAddr,
+        'TerminalType' = TerminalType,
+        'ClientVersion' = ClientVersion,
+        'GameID' = GameID,
+        'Model' = Model,
+        'Version' = Version
+    } = Req,
+    State.
