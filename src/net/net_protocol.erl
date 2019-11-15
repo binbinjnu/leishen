@@ -64,7 +64,8 @@
 %% @end
 %%--------------------------------------------------------------------
 start_link(Ref, Socket, Transport, Opts) ->
-    proc_lib:start_link(?MODULE, init, [Ref, Socket, Transport, Opts]).
+    SpawnOpts = [{min_heap_size, 1024}, {min_bin_vheap_size, 128 * 1024}],
+    proc_lib:start_link(?MODULE, init, [Ref, Socket, Transport, Opts], infinity, SpawnOpts).
 
 %%%===================================================================
 %%% gen_server callbacks

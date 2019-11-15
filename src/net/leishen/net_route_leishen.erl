@@ -27,7 +27,7 @@ route_evt(MsgID, Data, State) ->
     Handler:handle_evt(MsgID, Data, State).
 
 %% 消息路由
-msg_mod(MsgID) ->
+%%msg_mod(MsgID) ->
 msg_mod(MsgID) ->
     case MsgID div 1000 of
         100 -> handle_login;

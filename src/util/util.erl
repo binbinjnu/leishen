@@ -21,7 +21,10 @@
     process_name/1,
 
     filter_opts/2,
-    deny_opts/2
+    deny_opts/2,
+
+    ceil/1,
+    floor/1
 ]).
 
 rand(Same, Same) ->
@@ -111,4 +114,25 @@ deny_opts(Opts, Denies) ->
     case [Op || Op <- Opts, F(Op)] of
         [] -> ok;
         List -> erlang:error({invalid_opts, List})
+    end.
+
+%% 向上取整 大于N的最小整数
+ceil(N) ->
+    case trunc(N) of
+        M when M == N ->
+            M;
+        M when N > 0 ->
+            M + 1;
+        M -> M
+    end.
+
+
+%% 向下取整 小于X的最大整数
+floor(X) ->
+    case trunc(X) of
+        T when X == T ->
+            T;
+        T when X > 0 ->
+            T;
+        T -> T - 1
     end.

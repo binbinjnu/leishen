@@ -16,8 +16,7 @@
 -export([handle_msg/2,
     handle_evt/3]).
 
-handle_msg(#'C0000001'{} = Req, State) ->
-    State1 =
+handle_msg(#'C0000001'{} = _Req, State) ->
     {noreply, State};
 
 handle_msg(_Msg, State) ->
